@@ -1,0 +1,33 @@
+services:
+  db:
+    image: mysql
+    restart: "no"
+    env_file: .env
+    volumes:
+      - ./docker/db/initdb:/docker-entrypoint-initdb.d:ro
+
+  adminer:
+    image: adminer
+    restart: "no"
+    ports:
+      - 8080:8080
+
+  checker:
+    image: spammer
+    depends_on:
+      - db
+    restart: unless-stopped
+    env_file: .env
+    command: [ "php", "./checker.php" ]
+    deploy:
+      replicas: 10
+
+  sender:
+    image: spammer
+    depends_on:
+      - db
+    restart: unless-stopped
+    env_file: .env
+    command: [ "php", "./sender.php" ]
+    deploy:
+      replicas: 10
